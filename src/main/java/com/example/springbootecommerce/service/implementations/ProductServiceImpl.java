@@ -4,10 +4,8 @@ import com.example.springbootecommerce.dto.productentity.ProductEntityAfterCreat
 import com.example.springbootecommerce.dto.productentity.ProductEntityCreateDto;
 import com.example.springbootecommerce.dto.productentity.ProductEntityIndexDto;
 import com.example.springbootecommerce.mapper.productentity.ProductMapper;
-import com.example.springbootecommerce.model.ProductCategoryEntity;
-import com.example.springbootecommerce.model.ProductEntity;
-import com.example.springbootecommerce.model.SupplierEntity;
-import com.example.springbootecommerce.model.UserEntity;
+import com.example.springbootecommerce.mapper.productentity.productvariation.ProductVariationMapper;
+import com.example.springbootecommerce.model.*;
 import com.example.springbootecommerce.repository.ProductEntityRepository;
 import com.example.springbootecommerce.service.interfaces.CategoryServiceInterface;
 import com.example.springbootecommerce.service.interfaces.ProductServiceInterface;
@@ -21,6 +19,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Getter
 @Setter
@@ -32,6 +32,7 @@ public class ProductServiceImpl implements ProductServiceInterface {
     private final CategoryServiceInterface categoryServiceInterface;
     private final SupplierServiceInterface supplierServiceInterface;
     private final UserServiceInterface userServiceInterface;
+    private final ProductVariationMapper productVariationMapper;
 
     @Override
     public Page<ProductEntityIndexDto> getAllProducts(Pageable pageable) {
@@ -51,6 +52,9 @@ public class ProductServiceImpl implements ProductServiceInterface {
             throw new IllegalArgumentException("Invalid userId");
         }
 
+        List<ProductVariationNameEntity> variationNames = productVariationMapper.toVariationNameEntities(productEntityCreateDto.getProductVariationNames());
+        List<ProductVariationValueEntity> variationValues = productVariationMapper.toVariationValueEntities(productEntityCreateDto.getProductVariationValues());
+        List<ProductVariationDetailEntity> variationDetails = productVariationMapper.toVariationDetailsEntities(productEntityCreateDto.getProductVariationDetails());
         ProductEntity productEntity = productMapper.toEntity(productEntityCreateDto);
         productEntity = productRepository.save(productEntity);
         return productMapper.toAfterCreatedDto(productEntity);

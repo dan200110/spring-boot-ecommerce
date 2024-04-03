@@ -18,7 +18,7 @@ import lombok.Setter;
 public class ProductEntity extends DateAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @Column(name = "product_name", nullable = false, length = 150)
     private String productName;
@@ -32,14 +32,17 @@ public class ProductEntity extends DateAudit {
     @Column(name = "product_slug")
     private String productSlug;
 
-    @Column(name = "product_price", nullable = false)
-    private Double productPrice;
-
-    @Column(name = "product_quality", nullable = false)
-    private Integer productQuality;
-
     @Column(name = "product_type", nullable = false)
     private String productType;
+
+    @Column(name = "product_code", nullable = false)
+    private String productCode;
+
+    @Column(name = "number_soled", columnDefinition = "int default 0")
+    private int numberSoled;
+
+    @Column(name = "total_quantity", columnDefinition = "int default 0")
+    private int totalQuantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "id")
@@ -58,5 +61,6 @@ public class ProductEntity extends DateAudit {
     public void prePersist() {
         this.productSlug = SlugifyUtil.toSlug(this.productName);
     }
-    
+
 }
+
