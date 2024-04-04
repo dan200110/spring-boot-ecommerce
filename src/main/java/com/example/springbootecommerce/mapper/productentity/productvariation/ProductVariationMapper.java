@@ -9,13 +9,21 @@ import com.example.springbootecommerce.model.ProductVariationDetailEntity;
 import com.example.springbootecommerce.model.ProductVariationNameEntity;
 import com.example.springbootecommerce.model.ProductVariationValueEntity;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ProductVariationMapper {
 
-    ProductEntity toEntity(ProductEntityCreateDto productEntityCreateDto);
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "productSlug", ignore = true)
+    @Mapping(target = "numberSoled", ignore = true)
+    @Mapping(target = "totalQuantity", ignore = true)
+    @Mapping(target = "categoryEntity", ignore = true)
+    @Mapping(target = "supplierEntity", ignore = true)
+    @Mapping(target = "shopEntity", ignore = true)
+    ProductEntity toProductEntity(ProductEntityCreateDto productEntityCreateDto);
 
     List<ProductVariationNameEntity> toVariationNameEntities(List<ProductVariationNameDto> productVariationNameDtos);
 

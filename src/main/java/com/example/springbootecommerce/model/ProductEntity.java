@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "products", schema = "ecommerce")
 @Getter
@@ -19,6 +21,9 @@ public class ProductEntity extends DateAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(name = "product_uuid", nullable = false, unique = true)
+    private UUID productUuid;
 
     @Column(name = "product_name", nullable = false, length = 150)
     private String productName;
@@ -43,6 +48,9 @@ public class ProductEntity extends DateAudit {
 
     @Column(name = "total_quantity", columnDefinition = "int default 0")
     private int totalQuantity;
+
+    @Column(name = "is_draft", columnDefinition = "boolean default true")
+    private boolean isDraft = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "id")

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "product_variation_values", schema = "ecommerce")
+@Table(name = "product_variation_details", schema = "ecommerce")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -36,5 +36,5 @@ public class ProductVariationDetailEntity {
     private int quantity;
 
     @Column(name = "image")
-    private int image;
+    private String image;
 }

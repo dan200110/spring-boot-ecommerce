@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "product_variation_values", schema = "ecommerce")
 @Getter
@@ -16,6 +18,9 @@ public class ProductVariationValueEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(name = "product_variation_value_uuid", nullable = false, unique = true)
+    private UUID productVariationValueUuid;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", referencedColumnName = "id")

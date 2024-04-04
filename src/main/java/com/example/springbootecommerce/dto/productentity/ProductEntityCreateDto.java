@@ -7,10 +7,12 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
 public class ProductEntityCreateDto {
+    private UUID productUuid;
     private String productName;
     private String productThumb;
     private String productDescription;
