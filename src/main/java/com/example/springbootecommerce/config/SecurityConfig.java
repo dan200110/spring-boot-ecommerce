@@ -63,6 +63,8 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorize ->
                 authorize.requestMatchers(HttpMethod.POST, "/api/v1/login").permitAll()
                         .requestMatchers("/api/v1/users/**").permitAll()
+                        .requestMatchers("/api/v1/files/**").permitAll()
+                        .requestMatchers("uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/orders/*/confirm").permitAll()

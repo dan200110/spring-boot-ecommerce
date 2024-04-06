@@ -46,7 +46,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
 
         String path = request.getServletPath();
-
+        if (path.contains("uploads") || path.equals("/favicon.ico")) {
+            return true;
+        }
         if (request.getMethod().equals("POST")
                 && (path.contains("/api/v1/users")
                 || path.equals("/api/v1/login")

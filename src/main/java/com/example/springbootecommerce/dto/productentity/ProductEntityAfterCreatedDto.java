@@ -9,11 +9,26 @@ import java.util.UUID;
 @Builder
 public class ProductEntityAfterCreatedDto {
     private int id;
+
     private UUID productUuid;
+
     private String productName;
-    private String productType;
+
     private String productThumb;
+
     private String productDescription;
-    private Double numberSoled;
-    private Integer totalQuantity;
+
+    private String productSlug;
+
+    private String productType;
+
+    private String productCode;
+
+    private int numberSoled;
+
+    private int totalQuantity;
+
+    private int defaultPrice;
+
+    private boolean isDraft;
 }

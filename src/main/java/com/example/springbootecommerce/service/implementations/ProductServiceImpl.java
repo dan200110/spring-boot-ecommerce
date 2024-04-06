@@ -2,10 +2,12 @@ package com.example.springbootecommerce.service.implementations;
 
 import com.example.springbootecommerce.dto.productentity.ProductEntityAfterCreatedDto;
 import com.example.springbootecommerce.dto.productentity.ProductEntityCreateDto;
+import com.example.springbootecommerce.dto.productentity.ProductEntityDetailDto;
 import com.example.springbootecommerce.dto.productentity.ProductEntityIndexDto;
 import com.example.springbootecommerce.dto.productentity.productvariationentity.ProductVariationDetailDto;
 import com.example.springbootecommerce.dto.productentity.productvariationentity.ProductVariationNameDto;
 import com.example.springbootecommerce.dto.productentity.productvariationentity.ProductVariationValueDto;
+import com.example.springbootecommerce.exception.ResourceNotFoundException;
 import com.example.springbootecommerce.mapper.productentity.ProductMapper;
 import com.example.springbootecommerce.mapper.productentity.productvariation.ProductVariationMapper;
 import com.example.springbootecommerce.model.*;
@@ -13,10 +15,7 @@ import com.example.springbootecommerce.repository.ProductEntityRepository;
 import com.example.springbootecommerce.repository.ProductVariationDetailRepository;
 import com.example.springbootecommerce.repository.ProductVariationNameRepository;
 import com.example.springbootecommerce.repository.ProductVariationValueRepository;
-import com.example.springbootecommerce.service.interfaces.CategoryServiceInterface;
-import com.example.springbootecommerce.service.interfaces.ProductServiceInterface;
-import com.example.springbootecommerce.service.interfaces.SupplierServiceInterface;
-import com.example.springbootecommerce.service.interfaces.UserServiceInterface;
+import com.example.springbootecommerce.service.interfaces.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -24,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,26 +43,45 @@ public class ProductServiceImpl implements ProductServiceInterface {
     private final ProductVariationNameRepository productVariationNameRepository;
     private final ProductVariationValueRepository productVariationValueRepository;
     private final ProductVariationDetailRepository productVariationDetailRepository;
+    private final FileStorageServiceInterface fileStorageServiceInterface;
 
     @Override
     public Page<ProductEntityIndexDto> getAllProducts(Pageable pageable) {
-        Page<ProductEntity> productEntityPage = productRepository.findAll(pageable);
+        Page<ProductEntity> productEntityPage = productRepository.findByIsDraftFalse(pageable);
         return productEntityPage.map(productMapper::toIndexDto);
+    }
+
+    @Override
+    public Page<ProductEntityIndexDto> getAllDraftProducts(Pageable pageable) {
+        Page<ProductEntity> productEntityPage = productRepository.findByIsDraftTrue(pageable);
+        return productEntityPage.map(productMapper::toIndexDto);
+    }
+
+    @Override
+    public void uploadProductImage(int productId, MultipartFile productImage) {
+        ProductEntity productEntity = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+
+        // Upload main product image
+        if (productImage != null && !productImage.isEmpty()) {
+            try {
+                // Save the uploaded image
+                FileInfo fileInfo = fileStorageServiceInterface.save(productImage);
+                String productThumb = fileInfo.getUrl();
+                productEntity.setProductThumb(productThumb);
+                productRepository.save(productEntity);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to upload product image: " + e.getMessage());
+            }
+        } else {
+            throw new RuntimeException("Product image is empty or null.");
+        }
     }
 
     @Override
     @Transactional
     public ProductEntityAfterCreatedDto createProduct(ProductEntityCreateDto productEntityCreateDto) {
-        if (!isValidCategoryId(productEntityCreateDto.getCategoryId())) {
-            throw new IllegalArgumentException("Invalid categoryId");
-        }
-        if (!isValidSupplierId(productEntityCreateDto.getSupplierId())) {
-            throw new IllegalArgumentException("Invalid supplierId");
-        }
-        if (!isValidUserId(productEntityCreateDto.getUserId())) {
-            throw new IllegalArgumentException("Invalid userId");
-        }
-
+        validateProductEntityCreateDto(productEntityCreateDto);
         // Map productEntity and save
         ProductEntity productEntity = productMapper.toEntity(productEntityCreateDto);
         productEntity = productRepository.save(productEntity);
@@ -97,9 +116,26 @@ public class ProductServiceImpl implements ProductServiceInterface {
                 })
                 .collect(Collectors.toList());
 
+        // Calculate total quantity
+        int totalQuantity = variationDetailEntities.stream()
+                .mapToInt(ProductVariationDetailEntity::getQuantity)
+                .sum();
+
+        // Calculate default price
+        int defaultPrice = variationDetailEntities.stream()
+                .mapToInt(ProductVariationDetailEntity::getPrice)
+                .min()
+                .orElse(0);
+
+        // Update productEntity with totalQuantity and defaultPrice
+        productEntity.setTotalQuantity(totalQuantity);
+        productEntity.setDefaultPrice(defaultPrice);
+
+        // Save updated productEntity
+        productEntity = productRepository.save(productEntity);
+
         return productMapper.toAfterCreatedDto(productEntity);
     }
-
 
     public ProductVariationNameEntity toVariationNameEntity(ProductVariationNameDto nameDto, ProductEntity productEntity) {
         ProductVariationNameEntity variationNameEntity = new ProductVariationNameEntity();
@@ -127,6 +163,7 @@ public class ProductServiceImpl implements ProductServiceInterface {
         detailEntity.setPrice(detailDto.getPrice());
         detailEntity.setQuantity(detailDto.getQuantity());
         detailEntity.setImage(detailDto.getImage());
+        detailEntity.setSku(detailDto.getSku());
         // Find and set the corresponding ProductVariationValueEntity based on UUID for variationValueFirst
         ProductVariationValueEntity firstValueEntity = productVariationValueRepository.findByProductVariationValueUuid(detailDto.getVariationValueFirstUuid())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid variationValueFirstUuid"));
@@ -139,6 +176,42 @@ public class ProductServiceImpl implements ProductServiceInterface {
         return detailEntity;
     }
 
+    @Override
+    public ProductEntityDetailDto getProductById(int productId) {
+        // Find product by ID
+        ProductEntity productEntity = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find product with id " + productId));
+
+        // Map product entity to detail DTO
+        ProductEntityDetailDto productEntityDetailDto = productMapper.toDetailDto(productEntity);
+
+        // Find product variation names by product ID
+        List<ProductVariationNameEntity> productVariationNameEntities = productVariationNameRepository.findByProductEntityId(productId);
+        List<ProductVariationValueEntity> productVariationValueEntities = productVariationValueRepository.findByProductEntityId(productId);
+        List<ProductVariationDetailEntity> productVariationDetailEntities = productVariationDetailRepository.findByProductEntityId(productId);
+
+        List<ProductVariationNameDto> productVariationNameDtos = productVariationMapper.toVariationNameDtos(productVariationNameEntities);
+        List<ProductVariationValueDto> productVariationValueDtos = productVariationMapper.toVariationValueDtos(productVariationValueEntities);
+        List<ProductVariationDetailDto> productVariationDetailDtos = productVariationMapper.toVariationDetailDtos(productVariationDetailEntities);
+
+        productEntityDetailDto.setProductVariationNames(productVariationNameDtos);
+        productEntityDetailDto.setProductVariationValues(productVariationValueDtos);
+        productEntityDetailDto.setProductVariationDetails(productVariationDetailDtos);
+        return productEntityDetailDto;
+    }
+
+
+    private void validateProductEntityCreateDto(ProductEntityCreateDto productEntityCreateDto) {
+        if (!isValidCategoryId(productEntityCreateDto.getCategoryId())) {
+            throw new IllegalArgumentException("Invalid categoryId");
+        }
+        if (!isValidSupplierId(productEntityCreateDto.getSupplierId())) {
+            throw new IllegalArgumentException("Invalid supplierId");
+        }
+        if (!isValidUserId(productEntityCreateDto.getUserId())) {
+            throw new IllegalArgumentException("Invalid userId");
+        }
+    }
 
     private boolean isValidCategoryId(int categoryId) {
         ProductCategoryEntity productCategoryEntity = categoryServiceInterface.getCategoryById(categoryId);

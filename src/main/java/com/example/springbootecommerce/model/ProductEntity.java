@@ -49,6 +49,9 @@ public class ProductEntity extends DateAudit {
     @Column(name = "total_quantity", columnDefinition = "int default 0")
     private int totalQuantity;
 
+    @Column(name = "default_price", columnDefinition = "int default 0")
+    private int defaultPrice;
+
     @Column(name = "is_draft", columnDefinition = "boolean default true")
     private boolean isDraft = true;
 

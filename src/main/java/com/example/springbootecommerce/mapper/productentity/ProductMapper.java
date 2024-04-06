@@ -2,12 +2,14 @@ package com.example.springbootecommerce.mapper.productentity;
 
 import com.example.springbootecommerce.dto.productentity.ProductEntityAfterCreatedDto;
 import com.example.springbootecommerce.dto.productentity.ProductEntityCreateDto;
+import com.example.springbootecommerce.dto.productentity.ProductEntityDetailDto;
 import com.example.springbootecommerce.dto.productentity.ProductEntityIndexDto;
 import com.example.springbootecommerce.model.ProductEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.WARN)
 public interface ProductMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "productSlug", ignore = true)
@@ -18,5 +20,9 @@ public interface ProductMapper {
 
     ProductEntityIndexDto toIndexDto(ProductEntity entity);
 
+    @Mapping(target = "isDraft", source = "draft")
+    ProductEntityDetailDto toDetailDto(ProductEntity entity);
+
+    @Mapping(target = "isDraft", source = "draft")
     ProductEntityAfterCreatedDto toAfterCreatedDto(ProductEntity entity);
 }

@@ -6,17 +6,32 @@ import com.example.springbootecommerce.dto.userentity.UserEntityIndexDto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 @Builder
 public class ProductEntityIndexDto {
     private int id;
 
+    private UUID productUuid;
+
     private String productName;
-    private String productType;
+
     private String productThumb;
+
     private String productDescription;
-    private Double productPrice;
-    private Integer productQuality;
+
+    private String productSlug;
+
+    private String productType;
+
+    private String productCode;
+
+    private int numberSoled;
+
+    private int totalQuantity;
+
+    private int defaultPrice;
 
     private CategoryEntityCreateDto categoryEntity;
     private SupplierEntityCreateDto supplierEntity;

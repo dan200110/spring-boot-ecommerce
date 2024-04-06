@@ -1,10 +1,9 @@
 package com.example.springbootecommerce.mapper.productentity.productvariation;
 
-import com.example.springbootecommerce.dto.productentity.ProductEntityCreateDto;
 import com.example.springbootecommerce.dto.productentity.productvariationentity.ProductVariationDetailDto;
+import com.example.springbootecommerce.dto.productentity.productvariationentity.ProductVariationDetailIndexDto;
 import com.example.springbootecommerce.dto.productentity.productvariationentity.ProductVariationNameDto;
 import com.example.springbootecommerce.dto.productentity.productvariationentity.ProductVariationValueDto;
-import com.example.springbootecommerce.model.ProductEntity;
 import com.example.springbootecommerce.model.ProductVariationDetailEntity;
 import com.example.springbootecommerce.model.ProductVariationNameEntity;
 import com.example.springbootecommerce.model.ProductVariationValueEntity;
@@ -12,23 +11,51 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface ProductVariationMapper {
+    default ProductVariationValueDto productVariationValueEntityToProductVariationValueDto(ProductVariationValueEntity productVariationValueEntity) {
+        if (productVariationValueEntity == null) {
+            return null;
+        }
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "productSlug", ignore = true)
-    @Mapping(target = "numberSoled", ignore = true)
-    @Mapping(target = "totalQuantity", ignore = true)
-    @Mapping(target = "categoryEntity", ignore = true)
-    @Mapping(target = "supplierEntity", ignore = true)
-    @Mapping(target = "shopEntity", ignore = true)
-    ProductEntity toProductEntity(ProductEntityCreateDto productEntityCreateDto);
+        return ProductVariationValueDto.builder()
+                .productVariationValueUuid(productVariationValueEntity.getProductVariationValueUuid())
+                .productVariationNameUuid(productVariationValueEntity.getProductVariationNameEntity() != null ? productVariationValueEntity.getProductVariationNameEntity().getProductVariationNameUuid() : null)
+                .value(productVariationValueEntity.getValue())
+                .build();
+    }
 
-    List<ProductVariationNameEntity> toVariationNameEntities(List<ProductVariationNameDto> productVariationNameDtos);
+    default ProductVariationDetailDto productVariationDetailEntityToProductVariationDetailDto(ProductVariationDetailEntity productVariationDetailEntity) {
+        if (productVariationDetailEntity == null) {
+            return null;
+        }
 
-    List<ProductVariationValueEntity> toVariationValueEntities(List<ProductVariationValueDto> productVariationValueDtos);
+        return ProductVariationDetailDto.builder()
+                .variationValueFirstUuid(productVariationDetailEntity.getVariationValueFirst() != null ? productVariationDetailEntity.getVariationValueFirst().getProductVariationValueUuid() : null)
+                .variationValueSecondUuid(productVariationDetailEntity.getVariationValueSecond() != null ? productVariationDetailEntity.getVariationValueSecond().getProductVariationValueUuid() : null)
+                .price(productVariationDetailEntity.getPrice())
+                .quantity(productVariationDetailEntity.getQuantity())
+                .image(productVariationDetailEntity.getImage())
+                .sku(productVariationDetailEntity.getSku())
+                .build();
+    }
 
-    List<ProductVariationDetailEntity> toVariationDetailsEntities(List<ProductVariationDetailDto> productVariationDetailDtos);
+    List<ProductVariationNameDto> toVariationNameDtos(List<ProductVariationNameEntity> productVariationNameEntities);
+
+    List<ProductVariationValueDto> toVariationValueDtos(List<ProductVariationValueEntity> productVariationValueEntities);
+
+    List<ProductVariationDetailDto> toVariationDetailDtos(List<ProductVariationDetailEntity> productVariationDetailEntities);
+
+    @Mapping(source = "productEntity.productName", target = "productName")
+    ProductVariationDetailIndexDto toVariationDetailIndexDto(ProductVariationDetailEntity productVariationDetailEntity);
+
+    default List<ProductVariationDetailIndexDto> toVariationDetailIndexDtos(List<ProductVariationDetailEntity> productVariationDetailEntities) {
+        return productVariationDetailEntities.stream()
+                .map(this::toVariationDetailIndexDto)
+                .collect(Collectors.toList());
+    }
 }
+
 

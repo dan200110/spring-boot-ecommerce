@@ -37,4 +37,7 @@ public class ProductVariationDetailEntity {
 
     @Column(name = "image")
     private String image;
+
+    @Column(name = "sku", nullable = false, unique = true)
+    private String sku;
 }
