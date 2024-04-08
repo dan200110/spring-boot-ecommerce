@@ -21,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -76,6 +78,36 @@ public class ProductServiceImpl implements ProductServiceInterface {
         } else {
             throw new RuntimeException("Product image is empty or null.");
         }
+    }
+
+    @Override
+    public ResponseEntity<String> publishProduct(int productId) {
+        ProductEntity product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+
+        if (!product.isDraft()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product is already published");
+        }
+
+        product.setDraft(false);
+        productRepository.save(product);
+
+        return ResponseEntity.ok("Product published successfully");
+    }
+
+    @Override
+    public ResponseEntity<String> unPublishProduct(int productId) {
+        ProductEntity product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+
+        if (product.isDraft()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product is already unpublished");
+        }
+
+        product.setDraft(true);
+        productRepository.save(product);
+
+        return ResponseEntity.ok("Product unpublished successfully");
     }
 
     @Override
@@ -183,6 +215,8 @@ public class ProductServiceImpl implements ProductServiceInterface {
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find product with id " + productId));
 
         // Map product entity to detail DTO
+
+
         ProductEntityDetailDto productEntityDetailDto = productMapper.toDetailDto(productEntity);
 
         // Find product variation names by product ID

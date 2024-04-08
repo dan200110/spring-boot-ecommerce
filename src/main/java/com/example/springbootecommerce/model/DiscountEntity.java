@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 @Entity
 @Table(name = "discounts", schema = "ecommerce")
@@ -67,12 +66,5 @@ public class DiscountEntity extends DateAudit {
     @ElementCollection
     @CollectionTable(name = "discount_products", joinColumns = @JoinColumn(name = "discount_id"))
     @Column(name = "product_id")
-    private List<Integer> discountProducts;
-
-
-    @ElementCollection
-    @CollectionTable(name = "discount_users_used")
-    @MapKeyJoinColumn(name = "user_id")
-    @Column(name = "usage_count")
-    private Map<UserEntity, Integer> discountUsersUsed;
+    private Set<Integer> discountProducts;
 }

@@ -40,5 +40,4 @@ public class DiscountEntityCreateDto {
 
     private Set<Integer> discountProducts;
 
-
 }

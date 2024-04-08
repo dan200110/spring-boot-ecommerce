@@ -1,6 +1,7 @@
 package com.example.springbootecommerce.dto.discountentity;
 
-import com.example.springbootecommerce.model.UserEntity;
+import com.example.springbootecommerce.dto.productentity.ProductEntityAfterCreatedDto;
+import com.example.springbootecommerce.dto.userentity.UserEntityIndexDto;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,7 +11,7 @@ import java.util.Set;
 
 @Data
 @Builder
-public class DiscountEntityIndexDto {
+public class DiscountEntityDetailDto {
     private int id;
     private String discountName;
 
@@ -38,8 +39,8 @@ public class DiscountEntityIndexDto {
 
     private String discountAppliesTo;
 
-    private int shopId;
+    private UserEntityIndexDto shopEntity;
 
-    private Set<Integer> discountProducts;
-    private Map<UserEntity, Integer> discountUsersUsed;
+    private Set<ProductEntityAfterCreatedDto> discountProducts;
+    private Map<UserEntityIndexDto, Integer> discountUsersUsed;
 }

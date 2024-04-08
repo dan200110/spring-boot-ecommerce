@@ -4,8 +4,6 @@ import com.example.springbootecommerce.dto.productentity.ProductEntityAfterCreat
 import com.example.springbootecommerce.dto.productentity.ProductEntityCreateDto;
 import com.example.springbootecommerce.dto.productentity.ProductEntityDetailDto;
 import com.example.springbootecommerce.dto.productentity.ProductEntityIndexDto;
-import com.example.springbootecommerce.exception.ResourceNotFoundException;
-import com.example.springbootecommerce.model.ProductEntity;
 import com.example.springbootecommerce.repository.ProductEntityRepository;
 import com.example.springbootecommerce.service.interfaces.ProductServiceInterface;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -57,32 +54,12 @@ public class ProductController {
 
     @PutMapping("/{productId}/publish")
     public ResponseEntity<String> publishProduct(@PathVariable int productId) {
-        ProductEntity product = productEntityRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
-
-        if (!product.isDraft()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product is already published");
-        }
-
-        product.setDraft(false);
-        productEntityRepository.save(product);
-
-        return ResponseEntity.ok("Product published successfully");
+        return productServiceInterface.publishProduct(productId);
     }
 
     @PutMapping("/{productId}/unPublish")
     public ResponseEntity<String> unPublishProduct(@PathVariable int productId) {
-        ProductEntity product = productEntityRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
-
-        if (product.isDraft()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product is already unpublished");
-        }
-
-        product.setDraft(true);
-        productEntityRepository.save(product);
-
-        return ResponseEntity.ok("Product unpublished successfully");
+        return productServiceInterface.unPublishProduct(productId);
     }
 
     @PostMapping("/{productId}/upload-image")

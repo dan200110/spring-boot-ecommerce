@@ -5,7 +5,7 @@ import com.example.springbootecommerce.dto.cartentity.CartItemEntityIndexDto;
 import com.example.springbootecommerce.dto.cartentity.CartItemEntityUpdateDto;
 import com.example.springbootecommerce.exception.InvalidStateException;
 import com.example.springbootecommerce.exception.ResourceNotFoundException;
-import com.example.springbootecommerce.mapper.CartItemMapper;
+import com.example.springbootecommerce.mapper.cartentity.CartItemMapper;
 import com.example.springbootecommerce.model.CartItemEntity;
 import com.example.springbootecommerce.model.ProductEntity;
 import com.example.springbootecommerce.model.ProductVariationDetailEntity;

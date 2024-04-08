@@ -1,4 +1,4 @@
-package com.example.springbootecommerce.mapper;
+package com.example.springbootecommerce.mapper.cartentity;
 
 import com.example.springbootecommerce.dto.cartentity.CartItemEntityIndexDto;
 import com.example.springbootecommerce.model.CartItemEntity;
