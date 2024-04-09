@@ -67,4 +67,7 @@ public class DiscountEntity extends DateAudit {
     @CollectionTable(name = "discount_products", joinColumns = @JoinColumn(name = "discount_id"))
     @Column(name = "product_id")
     private Set<Integer> discountProducts;
+
+    @OneToMany(mappedBy = "discountEntity", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<DiscountUsageEntity> discountUsageEntities;
 }

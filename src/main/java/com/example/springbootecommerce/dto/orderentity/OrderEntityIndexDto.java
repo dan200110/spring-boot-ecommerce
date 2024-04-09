@@ -1,6 +1,8 @@
 package com.example.springbootecommerce.dto.orderentity;
 
 import com.example.springbootecommerce.constant.OrderStatus;
+import com.example.springbootecommerce.dto.cartentity.CartItemEntitySimplyDto;
+import com.example.springbootecommerce.dto.discountentity.DiscountEntityIndexDto;
 import com.example.springbootecommerce.dto.userentity.UserEntityIndexDto;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +32,6 @@ public class OrderEntityIndexDto {
 
     private UserEntityIndexDto userEntity;
 
-    private Set<Integer> cartItemIds;
-    private Set<Integer> discountIds;
+    private Set<OrderItemEntityDto> orderItems;
+    private Set<DiscountEntityIndexDto> discounts;
 }

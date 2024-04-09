@@ -58,8 +58,6 @@ public class ProductDetailServiceImpl implements ProductDetailServiceInterface {
             Hibernate.unproxy(detailEntity.getProductEntity());
         }
 
-        List<ProductVariationDetailIndexDto> productVariationDetailIndexDto = productVariationMapper.toVariationDetailIndexDtos(productVariationDetailEntities);
-
-        return productVariationDetailIndexDto;
+        return productVariationMapper.toVariationDetailIndexDtos(productVariationDetailEntities);
     }
 }

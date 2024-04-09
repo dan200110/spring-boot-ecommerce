@@ -66,8 +66,7 @@ public class CartItemServiceImpl implements CartItemServiceInterface {
                         .build();
 
         cartItemEntityRepository.save(newCartItemEntity);
-        CartItemEntityIndexDto cartItemEntityIndexDto = cartItemMapper.cartItemEntityToDto(newCartItemEntity);
-        return cartItemEntityIndexDto;
+        return cartItemMapper.cartItemEntityToDto(newCartItemEntity);
 
     }
 
@@ -76,11 +75,10 @@ public class CartItemServiceImpl implements CartItemServiceInterface {
         UserEntity userEntity = authencationUtils.extractUserFromAuthentication();
 
         List<CartItemEntity> cartItemEntities = cartItemEntityRepository.findByUserEntityId(userEntity.getId());
-        List<CartItemEntityIndexDto> cartItemEntityIndexDtos = cartItemEntities.stream()
-                .map(cartItemEntity -> cartItemMapper.cartItemEntityToDto(cartItemEntity))
-                .collect(Collectors.toList()); // Add this line to collect the mapped objects into a list
 
-        return cartItemEntityIndexDtos;
+        return cartItemEntities.stream()
+                .map(cartItemMapper::cartItemEntityToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -104,7 +102,7 @@ public class CartItemServiceImpl implements CartItemServiceInterface {
     private void checkCorrectUser(int cartItemId) {
         UserEntity userEntity = authencationUtils.extractUserFromAuthentication();
         Optional<CartItemEntity> cartItemEntity = cartItemEntityRepository.findById(cartItemId);
-        if (cartItemEntity == null || cartItemEntity.get().getUserEntity() != userEntity) {
+        if (cartItemEntity.isEmpty() || cartItemEntity.get().getUserEntity() != userEntity) {
             throw new InvalidStateException("Not have permission to change cart item");
         }
     }

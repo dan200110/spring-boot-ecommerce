@@ -49,7 +49,7 @@ public class OrderEntity extends DateAudit {
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private UserEntity userEntity;
 
-    @OneToMany(mappedBy = "orderEntity", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "orderEntity", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<OrderItemEntity> orderItemEntityList;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
