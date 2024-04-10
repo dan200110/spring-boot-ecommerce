@@ -6,6 +6,7 @@ import com.example.springbootecommerce.mapper.productentity.productvariation.Pro
 import com.example.springbootecommerce.model.FileInfo;
 import com.example.springbootecommerce.model.ProductVariationDetailEntity;
 import com.example.springbootecommerce.repository.ProductVariationDetailRepository;
+import com.example.springbootecommerce.service.interfaces.FileAwsServiceInterface;
 import com.example.springbootecommerce.service.interfaces.FileStorageServiceInterface;
 import com.example.springbootecommerce.service.interfaces.ProductDetailServiceInterface;
 import lombok.Getter;
@@ -27,6 +28,7 @@ public class ProductDetailServiceImpl implements ProductDetailServiceInterface {
     private final ProductVariationDetailRepository productVariationDetailRepository;
     private final FileStorageServiceInterface fileStorageServiceInterface;
     private final ProductVariationMapper productVariationMapper;
+    private final FileAwsServiceInterface fileAwsServiceInterface;
 
     @Override
     public void uploadProductDetailImage(int productDetailId, MultipartFile productDetailImage) {
@@ -36,9 +38,7 @@ public class ProductDetailServiceImpl implements ProductDetailServiceInterface {
         // Upload main product image
         if (productDetailImage != null && !productDetailImage.isEmpty()) {
             try {
-                // Save the uploaded image
-                FileInfo fileInfo = fileStorageServiceInterface.save(productDetailImage);
-                String productThumb = fileInfo.getUrl();
+                String productThumb = fileAwsServiceInterface.uploadFile(productDetailImage);
                 productVariationDetailEntity.setImage(productThumb);
                 productVariationDetailRepository.save(productVariationDetailEntity);
             } catch (Exception e) {

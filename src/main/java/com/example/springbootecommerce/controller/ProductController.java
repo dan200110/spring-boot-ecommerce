@@ -22,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductServiceInterface productServiceInterface;
-    private final ProductEntityRepository productEntityRepository;
 
     @PostMapping
     public ResponseEntity<ProductEntityAfterCreatedDto> create(

@@ -46,6 +46,7 @@ public class ProductServiceImpl implements ProductServiceInterface {
     private final ProductVariationValueRepository productVariationValueRepository;
     private final ProductVariationDetailRepository productVariationDetailRepository;
     private final FileStorageServiceInterface fileStorageServiceInterface;
+    private final FileAwsServiceInterface fileAwsServiceInterface;
 
     @Override
     public Page<ProductEntityIndexDto> getAllProducts(Pageable pageable) {
@@ -61,6 +62,8 @@ public class ProductServiceImpl implements ProductServiceInterface {
 
     @Override
     public void uploadProductImage(int productId, MultipartFile productImage) {
+
+
         ProductEntity productEntity = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
 
@@ -68,8 +71,7 @@ public class ProductServiceImpl implements ProductServiceInterface {
         if (productImage != null && !productImage.isEmpty()) {
             try {
                 // Save the uploaded image
-                FileInfo fileInfo = fileStorageServiceInterface.save(productImage);
-                String productThumb = fileInfo.getUrl();
+                String productThumb = fileAwsServiceInterface.uploadFile(productImage);
                 productEntity.setProductThumb(productThumb);
                 productRepository.save(productEntity);
             } catch (Exception e) {
