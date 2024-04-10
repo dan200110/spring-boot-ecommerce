@@ -17,11 +17,13 @@ import com.example.springbootecommerce.service.interfaces.CartItemServiceInterfa
 import com.example.springbootecommerce.service.interfaces.OrderServiceInterface;
 import com.example.springbootecommerce.util.AuthencationUtils;
 import com.example.springbootecommerce.util.DateUtil;
+import jakarta.persistence.LockModeType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -111,21 +113,20 @@ public class OrderServiceImpl implements OrderServiceInterface {
         }
     }
 
-    private void decreaseProductQuantity(Set<OrderItemEntity> orderItems) {
+    @Transactional
+    public void decreaseProductQuantity(Set<OrderItemEntity> orderItems) {
         for (OrderItemEntity orderItemEntity : orderItems) {
             ProductVariationDetailEntity productVariationDetailEntity = orderItemEntity.getProductVariationDetailEntity();
-            int quantityToDecrease = orderItemEntity.getQuantity();
+            ProductVariationDetailEntity lockedProductVariationDetailEntity = productVariationDetailRepository.findWithLockingById(productVariationDetailEntity.getId());
 
-            // Decrease the product quantity
-            int remainingQuantity = productVariationDetailEntity.getQuantity() - quantityToDecrease;
+            int quantityToDecrease = orderItemEntity.getQuantity();
+            int remainingQuantity = lockedProductVariationDetailEntity.getQuantity() - quantityToDecrease;
             if (remainingQuantity < 0) {
-                // Handle insufficient quantity scenario (e.g., throw an exception)
-                throw new InvalidStateException("Insufficient quantity for product variation: " + productVariationDetailEntity.getId());
+                throw new InvalidStateException("Insufficient quantity for product variation: " + lockedProductVariationDetailEntity.getId());
             }
 
-            // Update the product quantity
-            productVariationDetailEntity.setQuantity(remainingQuantity);
-            productVariationDetailRepository.save(productVariationDetailEntity);
+            lockedProductVariationDetailEntity.setQuantity(remainingQuantity);
+            productVariationDetailRepository.save(lockedProductVariationDetailEntity);
         }
     }
 

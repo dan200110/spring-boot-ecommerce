@@ -6,15 +6,23 @@ import com.example.springbootecommerce.dto.productentity.ProductEntityDetailDto;
 import com.example.springbootecommerce.dto.productentity.ProductEntityIndexDto;
 import com.example.springbootecommerce.repository.ProductEntityRepository;
 import com.example.springbootecommerce.service.interfaces.ProductServiceInterface;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.concurrent.TimeUnit;
 
 @RequestMapping("/api/v1/products")
 @RestController
@@ -22,7 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductServiceInterface productServiceInterface;
-
+    private final RedisTemplate redisTemplate;
     @PostMapping
     public ResponseEntity<ProductEntityAfterCreatedDto> create(
             @RequestBody ProductEntityCreateDto productEntityCreateDto) {
@@ -45,10 +53,30 @@ public class ProductController {
         return ResponseEntity.ok(productEntityIndexDtoPage);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ProductEntityDetailDto> findById(@PathVariable("id") int id) {
-        ProductEntityDetailDto productEntityDetailDto = productServiceInterface.getProductById(id);
-        return ResponseEntity.ok(productEntityDetailDto);
+    private static final String REDIS_KEY_PREFIX = "product:";
+
+    @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> findById(@PathVariable("id") int id) throws JsonProcessingException {
+        String redisKey = REDIS_KEY_PREFIX + id;
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+
+        // Attempt to retrieve the cached value from Redis
+        String productJson = valueOperations.get(redisKey);
+
+        if (productJson == null) {
+            // Data not found in cache, retrieve from database
+            ProductEntityDetailDto productEntityDetailDto = productServiceInterface.getProductById(id);
+
+            // Convert ProductEntityDetailDto to JSON string
+            ObjectMapper objectMapper = new ObjectMapper();
+            productJson = objectMapper.writeValueAsString(productEntityDetailDto);
+
+            // Cache the JSON string in Redis with setnx and expiration time
+            valueOperations.setIfAbsent(redisKey, productJson, 1, TimeUnit.MINUTES);
+        }
+
+        // Return the JSON string with the appropriate content type
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(productJson);
     }
 
     @PutMapping("/{productId}/publish")

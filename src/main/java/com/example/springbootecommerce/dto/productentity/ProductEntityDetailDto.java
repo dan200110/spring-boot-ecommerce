@@ -6,6 +6,8 @@ import com.example.springbootecommerce.dto.productentity.productvariationentity.
 import com.example.springbootecommerce.dto.productentity.productvariationentity.ProductVariationValueDto;
 import com.example.springbootecommerce.dto.supplierentity.SupplierEntityCreateDto;
 import com.example.springbootecommerce.dto.userentity.UserEntityIndexDto;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
